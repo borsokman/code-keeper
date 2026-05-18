@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.vagrant/
+.venv
+__pycache__/
+k3s.yaml
+node-token
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+*.tfvars
