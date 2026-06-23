@@ -10,3 +10,4 @@ node-token
 *.tfstate.backup
 .terraform.lock.hcl
 *.tfvars
+*.gitlab-ci.yml

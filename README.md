@@ -211,54 +211,48 @@ aws ecs update-service --cluster microservices-cluster --service billing-app-ser
 ## Project Tree
 
 ```
-cloud-design
-├─ Manifests
-│  ├─ api-gateway-app.yaml
-│  ├─ billing-app.yaml
-│  ├─ billing-db.yaml
-│  ├─ inventory-app.yaml
-│  ├─ inventory-db.yaml
-│  ├─ rabbitmq-server.yaml
-│  └─ secrets.yaml
+code-keeper
 ├─ README.md
 ├─ Vagrantfile
-├─ architecture.png
+├─ ansible
+│  ├─ inventory.ini
+│  └─ playbook.yml
+├─ api-gateway-app
+│  ├─ Dockerfile
+│  ├─ app
+│  │  ├─ __init__.py
+│  │  ├─ config.py
+│  │  └─ routes.py
+│  ├─ requirements.txt
+│  └─ server.py
+├─ billing-app
+│  ├─ Dockerfile
+│  ├─ app
+│  │  ├─ __init__.py
+│  │  ├─ consumer.py
+│  │  └─ models.py
+│  ├─ requirements.txt
+│  └─ server.py
+├─ billing-db
+│  ├─ Dockerfile
+│  └─ entrypoint.sh
+├─ code-keeper.png
 ├─ docker-compose.yml
+├─ inventory-app
+│  ├─ Dockerfile
+│  ├─ app
+│  │  ├─ __init__.py
+│  │  ├─ models.py
+│  │  └─ routes.py
+│  ├─ requirements.txt
+│  └─ server.py
+├─ inventory-db
+│  ├─ Dockerfile
+│  └─ entrypoint.sh
 ├─ orchestrator.sh
-├─ srcs
-│  ├─ api-gateway-app
-│  │  ├─ Dockerfile
-│  │  ├─ app
-│  │  │  ├─ __init__.py
-│  │  │  ├─ config.py
-│  │  │  └─ routes.py
-│  │  ├─ requirements.txt
-│  │  └─ server.py
-│  ├─ billing-app
-│  │  ├─ Dockerfile
-│  │  ├─ app
-│  │  │  ├─ __init__.py
-│  │  │  ├─ consumer.py
-│  │  │  └─ models.py
-│  │  ├─ requirements.txt
-│  │  └─ server.py
-│  ├─ billing-db
-│  │  ├─ Dockerfile
-│  │  └─ entrypoint.sh
-│  ├─ inventory-app
-│  │  ├─ Dockerfile
-│  │  ├─ app
-│  │  │  ├─ __init__.py
-│  │  │  ├─ models.py
-│  │  │  └─ routes.py
-│  │  ├─ requirements.txt
-│  │  └─ server.py
-│  ├─ inventory-db
-│  │  ├─ Dockerfile
-│  │  └─ entrypoint.sh
-│  └─ rabbitmq-server
-│     ├─ Dockerfile
-│     └─ entrypoint.sh
+├─ rabbitmq-server
+│  ├─ Dockerfile
+│  └─ entrypoint.sh
 └─ terraform
    ├─ acm.tf
    ├─ alb.tf

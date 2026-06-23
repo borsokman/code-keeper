@@ -1,0 +1,103 @@
+---
+- name: Deploy and Configure GitLab with Runners on Ubuntu 24.04 ARM64
+  hosts: gitlab_servers
+  become: true
+  vars:
+    # Set your VM's IP address or local hostname here
+    external_url: "http://{{ ansible_host }}"
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Install system dependencies
+      apt:
+        name:
+          - curl
+          - openssh-server
+          - ca-certificates
+          - tzdata
+          - perl
+          - gnupg
+        state: present
+
+    - name: Download GitLab CE repository installation script
+      get_url:
+        url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+        dest: /tmp/gitlab_repo_script.sh
+        mode: "0755"
+
+    - name: Execute GitLab repository script
+      command: bash /tmp/gitlab_repo_script.sh
+      args:
+        creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+
+    - name: Install GitLab CE (Omnibus Package)
+      apt:
+        name: gitlab-ce
+        state: present
+      environment:
+        EXTERNAL_URL: "{{ external_url }}"
+
+    - name: Ensure GitLab configuration is applied
+      command: gitlab-ctl reconfigure
+      args:
+        creates: /etc/gitlab/gitlab-secrets.json
+
+    # --- DOCKER ENGINE INSTALLATION FOR THE RUNNER EXECUTER ---
+    - name: Install Docker prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - software-properties-common
+        state: present
+
+    - name: Add Docker official GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository for ARM64
+      apt_repository:
+        repo: "deb [arch=arm64] https://download.docker.com/linux/ubuntu noble stable"
+        state: present
+
+    - name: Install Docker Engine
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is running and enabled
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    # --- GITLAB RUNNER INSTALLATION ---
+    - name: Download GitLab Runner repository installation script
+      get_url:
+        url: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh
+        dest: /tmp/gitlab_runner_script.sh
+        mode: "0755"
+
+    - name: Execute GitLab Runner repository script
+      command: bash /tmp/gitlab_runner_script.sh
+      args:
+        creates: /etc/apt/sources.list.d/runner_gitlab-runner.list
+
+    - name: Install GitLab Runner
+      apt:
+        name: gitlab-runner
+        state: present
+
+    - name: Ensure gitlab-runner user is added to docker group
+      user:
+        name: gitlab-runner
+        groups: docker
+        append: yes
