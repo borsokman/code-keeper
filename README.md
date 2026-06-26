@@ -10,7 +10,7 @@ Previously, the application relied on local Kubernetes manifests and custom Dock
 
 1. **Compute (AWS ECS with AWS Fargate):** Replaced Kubernetes pods. Fargate provides serverless compute for containers, eliminating the need to manage underlying EC2 instances.
 2. **Container Registry (AWS ECR):** Replaced Docker Hub. We migrated custom images to Amazon Elastic Container Registry to avoid Docker Hub rate limits and reduce latency. We utilize the AWS Public ECR for official images (like PostgreSQL and RabbitMQ).
-3. **Service Discovery (AWS Cloud Map):** Replaced Kubernetes internal DNS (CoreDNS). Cloud Map allows microservices to communicate securely via a private namespace (`backend.local`).
+3. **Service Discovery (AWS Cloud Map):** Replaced Kubernetes internal DNS (CoreDNS). Cloud Map allows microservices to communicate securely via a private namespace (`microservices.local`).
 4. **Data Persistence (Fargate Ephemeral Storage):** Replaced Kubernetes Persistent Volumes (PV/PVC). EFS was originally provisioned, but due to strict POSIX root-ownership security constraints in PostgreSQL, databases currently utilize Fargate's built-in 20GB ephemeral storage to ensure high availability.
 5. **Load Balancing & Routing (AWS ALB):** Replaced Kubernetes Ingress. The Application Load Balancer routes external traffic to the API Gateway.
 6. **Authentication (AWS Cognito):** Replaced basic auth. The ALB integrates directly with Cognito to enforce user authentication at the network edge before traffic ever reaches the containers.
@@ -51,9 +51,9 @@ graph TD
     ALB -->|Routes to| API
 
     %% Internal Service Discovery
-    API -->|backend.local| InvApp
-    API -->|backend.local| BillApp
-    API -->|backend.local| Rabbit
+    API -->|microservices.local| InvApp
+    API -->|microservices.local| BillApp
+    API -->|microservices.local| Rabbit
     BillApp -->|Message Queue| Rabbit
 
     %% Database Connections
@@ -272,3 +272,9 @@ code-keeper
    └─ storage.tf
 
 ```
+
+Run the playbook script:
+ansible-playbook -i inventory.ini playbook.yml --ask-become-pass
+
+Enter VM:
+ssh 'devops@192.168.0.248'

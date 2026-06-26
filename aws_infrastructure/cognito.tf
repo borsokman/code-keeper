@@ -9,7 +9,7 @@ resource "aws_cognito_user_pool" "pool" {
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = "microservices-borsok" # Must be globally unique, change if taken
+  domain       = "microservices-borsok" # Must be globally unique
   user_pool_id = aws_cognito_user_pool.pool.id
 }
 

@@ -3,9 +3,6 @@ resource "aws_cloudwatch_log_group" "microservices_logs" {
     "api-gateway-app",
     "inventory-app",
     "billing-app",
-    "inventory-db",
-    "billing-db",
-    "rabbitmq-server"
   ])
 
   name              = "/ecs/microservices/${each.key}"

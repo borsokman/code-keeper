@@ -41,7 +41,7 @@ resource "aws_subnet" "public_2" {
   }
 }
 
-# 4. Private Subnets (For your 6 containers)
+# 4. Private Subnets (For 3 microservices, RDS, MQ)
 resource "aws_subnet" "private_1" {
   vpc_id            = aws_vpc.main_vpc.id
   cidr_block        = "10.0.3.0/24"
@@ -115,4 +115,14 @@ resource "aws_route_table_association" "private_1_assoc" {
 resource "aws_route_table_association" "private_2_assoc" {
   subnet_id      = aws_subnet.private_2.id
   route_table_id = aws_route_table.private_rt.id
+}
+
+# 9. DB SUBNET GROUP (For RDS files)
+resource "aws_db_subnet_group" "private" {
+  name       = "main-db-subnet-group"
+  subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id]
+
+  tags = {
+    Name = "microservices-db-subnet-group"
+  }
 }

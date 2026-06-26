@@ -1,19 +1,19 @@
 resource "aws_ssm_parameter" "inventory_db_password" {
   name  = "/microservices/inventory-db/password"
   type  = "SecureString"
-  value = "123456"
+  value = var.db_password_inventory
 }
 
 resource "aws_ssm_parameter" "billing_db_password" {
   name  = "/microservices/billing-db/password"
   type  = "SecureString"
-  value = "654321"
+  value = var.db_password_billing
 }
 
 resource "aws_ssm_parameter" "rabbitmq_password" {
   name  = "/microservices/rabbitmq/password"
   type  = "SecureString"
-  value = "billing_pass"
+  value = var.rabbitmq_password
 }
 
 resource "aws_iam_role_policy" "ecs_secrets_policy" {

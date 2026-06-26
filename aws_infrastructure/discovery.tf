@@ -1,6 +1,6 @@
 # 1. Create the Private DNS Namespace
 resource "aws_service_discovery_private_dns_namespace" "microservices" {
-  name        = "backend.local"
+  name        = "microservices.local"
   description = "Internal DNS for microservices"
   vpc         = aws_vpc.main_vpc.id
 }
@@ -10,9 +10,6 @@ resource "aws_service_discovery_service" "sd_services" {
   for_each = toset([
     "inventory-app",
     "billing-app",
-    "inventory-db",
-    "billing-db",
-    "rabbitmq"
   ])
 
   name = each.key

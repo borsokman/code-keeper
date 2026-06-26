@@ -50,43 +50,36 @@ resource "aws_security_group" "api_gateway_sg" {
   }
 }
 
-# 3. Internal Services Security Group (API Gateway -> Apps -> DBs/RabbitMQ)
+# 3. Internal Services Security Group (API Gateway -> Apps -> AmazonMQ)
 resource "aws_security_group" "internal_sg" {
   name        = "internal-services-sg"
-  description = "Allow internal traffic between microservices"
+  description = "Allow internal traffic for apps and MQ broker"
   vpc_id      = aws_vpc.main_vpc.id
 
-  # Allow Apps (8080)
+  # Allow API Gateway to talk to backend apps (Inventory/Billing) on 8080
   ingress {
+    description     = "Traffic from API Gateway to Apps"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.api_gateway_sg.id]
   }
 
-  # Allow RabbitMQ (5672)
+  # Allow RabbitMQ TLS traffic (5671) from API Gateway AND internal apps
   ingress {
-    from_port       = 5672
-    to_port         = 5672
+    description     = "RabbitMQ TLS from API Gateway"
+    from_port       = 5671
+    to_port         = 5671
     protocol        = "tcp"
-    self            = true # Allow resources in this SG to talk to each other
     security_groups = [aws_security_group.api_gateway_sg.id]
   }
 
-  # Allow PostgreSQL (5432)
   ingress {
-    from_port = 5432
-    to_port   = 5432
-    protocol  = "tcp"
-    self      = true
-  }
-
-    # Allow EFS / NFS (2049) so databases can mount their hard drives
-  ingress {
-    from_port = 2049
-    to_port   = 2049
-    protocol  = "tcp"
-    self      = true
+    description = "RabbitMQ TLS from Internal Apps"
+    from_port   = 5671
+    to_port     = 5671
+    protocol    = "tcp"
+    self        = true # Allows Billing App in this same SG to talk to MQ
   }
 
   egress {
