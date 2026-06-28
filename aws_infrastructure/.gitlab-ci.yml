@@ -1,0 +1,47 @@
+stages:
+  - validate
+  - plan
+  - apply
+
+# Use the official HashiCorp Terraform image
+image:
+  name: hashicorp/terraform:1.7.0
+  entrypoint: [""]
+
+# Cache the .terraform directory so it doesn't download AWS providers on every stage
+cache:
+  key: terraform-cache
+  paths:
+    - .terraform/
+
+before_script:
+  - terraform init
+
+# Stage 1: Ensure syntax and formatting are flawless
+validate_infrastructure:
+  stage: validate
+  script:
+    - terraform fmt -check
+    - terraform validate
+
+# Stage 2: Create the execution plan and save it as an artifact
+plan_infrastructure:
+  stage: plan
+  script:
+    - terraform plan -out=tfplan
+  artifacts:
+    name: "tfplan"
+    paths:
+      - tfplan
+    expire_in: 1 hour
+
+# Stage 3: Deploy the infrastructure to AWS
+apply_infrastructure:
+  stage: apply
+  script:
+    - terraform apply -input=false tfplan
+  dependencies:
+    - plan_infrastructure
+  only:
+    - main
+  when: manual # STRICT SAFETY: Requires you to click "Play" in GitLab to prevent accidental destruction

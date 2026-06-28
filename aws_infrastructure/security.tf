@@ -12,14 +12,6 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-    ingress {
-    description = "HTTPS from Internet"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -80,6 +72,28 @@ resource "aws_security_group" "internal_sg" {
     to_port     = 5671
     protocol    = "tcp"
     self        = true # Allows Billing App in this same SG to talk to MQ
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# 4. Database Security Group (Apps -> RDS)
+resource "aws_security_group" "db_sg" {
+  name        = "rds-database-sg"
+  description = "Allow PostgreSQL traffic from internal applications only"
+  vpc_id      = aws_vpc.main_vpc.id
+
+  ingress {
+    description     = "PostgreSQL from internal microservices"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.internal_sg.id]
   }
 
   egress {

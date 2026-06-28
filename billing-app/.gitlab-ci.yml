@@ -1,0 +1,38 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  AWS_REGISTRY_URL: "327425719370.dkr.ecr.eu-north-1.amazonaws.com"
+  APP_NAME: "billing-app"
+  CLUSTER_NAME: "microservices-cluster"
+  SERVICE_NAME: "billing-app-service"
+
+# This stage builds the Docker image and pushes it securely to AWS ECR
+build_image:
+  stage: build
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
+  before_script:
+    # Install AWS CLI inside the runner container to authenticate with ECR
+    - apk add --no-cache aws-cli
+    - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY_URL
+  script:
+    # Build the image using the unique GitLab Commit SHA tag
+    - docker build -t $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA .
+    # Also tag it as latest for reference
+    - docker tag $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA $AWS_REGISTRY_URL/$APP_NAME:latest
+    # Push both tags to ECR
+    - docker push $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA
+    - docker push $AWS_REGISTRY_URL/$APP_NAME:latest
+
+# This stage triggers AWS ECS to download the new image and restart the Fargate task
+deploy_to_ecs:
+  stage: deploy
+  image: amazon/aws-cli:latest
+  script:
+    # Update the ECS Task Definition to use the new container image tag
+    - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
+  only:
+    - main # Only deploy when code is merged into the main branch
