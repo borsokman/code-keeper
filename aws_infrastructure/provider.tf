@@ -17,9 +17,9 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket         = "your-unique-terraform-state-bucket" # Must be created in AWS manually first
-    key            = "state/terraform.tfstate"
-    region         = "eu-north-1"
-    encrypt        = true
+    bucket  = "code-keeper-microservices-project-borsok"
+    key     = "state/terraform.tfstate"
+    region  = "eu-north-1"
+    encrypt = true
   }
 }

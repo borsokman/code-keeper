@@ -46,7 +46,7 @@ def callback(app, ch, method, properties, body):
 
 def run_consumer(app):
     rabbit_host = os.getenv("RABBITMQ_HOST", "localhost")
-    rabbit_port = int(os.getenv("RABBITMQ_PORT", "5672"))
+    rabbit_port = int(os.getenv("RABBITMQ_PORT", "5671"))
     rabbit_user = os.getenv("RABBITMQ_USER", "guest")
     rabbit_password = os.getenv("RABBITMQ_PASSWORD", "guest")
 

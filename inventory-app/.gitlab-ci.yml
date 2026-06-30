@@ -1,4 +1,5 @@
 stages:
+  - test
   - build
   - deploy
 
@@ -8,12 +9,37 @@ variables:
   CLUSTER_NAME: "microservices-cluster"
   SERVICE_NAME: "inventory-app-service"
 
+# Executes your unit tests locally inside the GitLab runner container
+run_all_tests:
+  stage: test
+  image: python:3.12-slim
+  services:
+    - name: postgres:15-alpine
+      alias: inventory-db
+  variables:
+    DB_USER: "test_user"
+    DB_PASSWORD: "test_password"
+    DB_HOST: "inventory-db"
+    DB_PORT: "5432"
+    DB_NAME: "inventory_test"
+    POSTGRES_DB: "inventory_test"
+    POSTGRES_PASSWORD: "test_password"
+    POSTGRES_USER: "test_user"
+  script:
+    - pip install -r requirements.txt
+    # 1. Run Unit Tests first
+    - pytest tests/unit/
+    # 2. Run Integration Tests second (overriding host for the GitLab service container network)
+    - DB_HOST=inventory-db pytest tests/integration/
 # This stage builds the Docker image and pushes it securely to AWS ECR
 build_image:
   stage: build
   image: docker:24.0.7
   services:
     - docker:24.0.7-dind
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: "" # Disables TLS requirement between client and service
   before_script:
     # Install AWS CLI inside the runner container to authenticate with ECR
     - apk add --no-cache aws-cli
@@ -30,9 +56,11 @@ build_image:
 # This stage triggers AWS ECS to download the new image and restart the Fargate task
 deploy_to_ecs:
   stage: deploy
-  image: amazon/aws-cli:latest
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
   script:
     # Update the ECS Task Definition to use the new container image tag
-    - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
+    - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $AWS_DEFAULT_REGION
   only:
     - main # Only deploy when code is merged into the main branch

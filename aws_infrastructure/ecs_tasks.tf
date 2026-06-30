@@ -6,18 +6,18 @@ resource "aws_ecs_task_definition" "api_gateway" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
-    runtime_platform {
+  runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"
   }
-  
+
   container_definitions = jsonencode([
     {
-      name      = "api-gateway-app"
-      image     = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/api-gateway-app:v1"
-      essential = true
+      name         = "api-gateway-app"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/api-gateway-app:v1"
+      essential    = true
       portMappings = [{ containerPort = 3000, protocol = "tcp" }]
-            logConfiguration = {
+      logConfiguration = {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = "/ecs/microservices/api-gateway-app"
@@ -46,18 +46,18 @@ resource "aws_ecs_task_definition" "inventory_app" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
-    runtime_platform {
+  runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"
   }
-  
+
   container_definitions = jsonencode([
     {
-      name      = "inventory-app"
-      image     = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/inventory-app:v1"
-      essential = true
+      name         = "inventory-app"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/inventory-app:v1"
+      essential    = true
       portMappings = [{ containerPort = 8080, protocol = "tcp" }]
-            logConfiguration = {
+      logConfiguration = {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = "/ecs/microservices/inventory-app"
@@ -86,18 +86,18 @@ resource "aws_ecs_task_definition" "billing_app" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
 
-    runtime_platform {
+  runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "ARM64"
   }
-  
+
   container_definitions = jsonencode([
     {
-      name      = "billing-app"
-      image     = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/billing-app:v1"
-      essential = true
+      name         = "billing-app"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/billing-app:v1"
+      essential    = true
       portMappings = [{ containerPort = 8080, protocol = "tcp" }]
-            logConfiguration = {
+      logConfiguration = {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = "/ecs/microservices/billing-app"
