@@ -278,3 +278,8 @@ ansible-playbook -i inventory.ini playbook.yml --ask-become-pass
 
 Enter VM:
 ssh 'devops@192.168.0.248'
+
+New Venv
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt

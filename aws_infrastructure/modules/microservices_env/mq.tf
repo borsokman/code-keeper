@@ -1,5 +1,5 @@
 resource "aws_mq_broker" "rabbitmq_broker" {
-  broker_name                = "rabbitmq"
+  broker_name                = "rabbitmq-${var.environment}"
   engine_type                = "RabbitMQ"
   engine_version             = "3.13" # Or your preferred stable version
   host_instance_type         = "mq.m7g.medium"

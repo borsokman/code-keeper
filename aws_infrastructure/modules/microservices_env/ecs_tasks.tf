@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "api_gateway" {
-  family                   = "api-gateway-task"
+  family                   = "api-gateway-task-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -14,19 +14,19 @@ resource "aws_ecs_task_definition" "api_gateway" {
   container_definitions = jsonencode([
     {
       name         = "api-gateway-app"
-      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/api-gateway-app:v1"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/api-gateway-app-${var.environment}:v1"
       essential    = true
       portMappings = [{ containerPort = 3000, protocol = "tcp" }]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/microservices/api-gateway-app"
+          "awslogs-group"         = "/ecs/microservices/${var.environment}/api-gateway-app"
           "awslogs-region"        = "eu-north-1"
           "awslogs-stream-prefix" = "ecs"
         }
       }
       environment = [
-        { name = "INVENTORY_URL", value = "http://inventory-app.microservices.local:8080" },
+        { name = "INVENTORY_URL", value = "http://inventory-app.microservices-${var.environment}.local:8080" },
         { name = "RABBITMQ_HOST", value = split(":", replace(aws_mq_broker.rabbitmq_broker.instances.0.endpoints.0, "amqps://", ""))[0] },
         { name = "RABBITMQ_PORT", value = "5671" },
         { name = "RABBITMQ_USER", value = var.rabbitmq_user }
@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "api_gateway" {
 }
 
 resource "aws_ecs_task_definition" "inventory_app" {
-  family                   = "inventory-app-task"
+  family                   = "inventory-app-task-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -54,13 +54,13 @@ resource "aws_ecs_task_definition" "inventory_app" {
   container_definitions = jsonencode([
     {
       name         = "inventory-app"
-      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/inventory-app:v1"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/inventory-app-${var.environment}:v1"
       essential    = true
       portMappings = [{ containerPort = 8080, protocol = "tcp" }]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/microservices/inventory-app"
+          "awslogs-group"         = "/ecs/microservices/${var.environment}/inventory-app"
           "awslogs-region"        = "eu-north-1"
           "awslogs-stream-prefix" = "ecs"
         }
@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "inventory_app" {
 }
 
 resource "aws_ecs_task_definition" "billing_app" {
-  family                   = "billing-app-task"
+  family                   = "billing-app-task-${var.environment}"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
@@ -94,13 +94,13 @@ resource "aws_ecs_task_definition" "billing_app" {
   container_definitions = jsonencode([
     {
       name         = "billing-app"
-      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/billing-app:v1"
+      image        = "327425719370.dkr.ecr.eu-north-1.amazonaws.com/billing-app-${var.environment}:v1"
       essential    = true
       portMappings = [{ containerPort = 8080, protocol = "tcp" }]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = "/ecs/microservices/billing-app"
+          "awslogs-group"         = "/ecs/microservices/${var.environment}/billing-app"
           "awslogs-region"        = "eu-north-1"
           "awslogs-stream-prefix" = "ecs"
         }

@@ -1,12 +1,24 @@
 stages:
   - validate
   - plan
+  - infra-deploy # New infrastructure provisioning stage
+  - app-deploy # For updating ECS task definitions
+  - e2e-test
   - apply
 
-# Use the official HashiCorp Terraform image
-image:
-  name: hashicorp/terraform:1.7.0
-  entrypoint: [""]
+.terraform_base:
+  image:
+    name: hashicorp/terraform:1.7
+    entrypoint: [""]
+  before_script:
+    # Ensure AWS Credentials are ready for Terraform
+    - export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    - export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    - export AWS_DEFAULT_REGION="eu-north-1"
+    # Pass database and message broker passwords securely using TF_VAR_ environment variables
+    - export TF_VAR_rabbitmq_password=$RABBITMQ_PASSWORD
+    - export TF_VAR_db_password_inventory=$DB_PASSWORD_INVENTORY
+    - export TF_VAR_db_password_billing=$DB_PASSWORD_BILLING
 
 # Cache the .terraform directory so it doesn't download AWS providers on every stage
 cache:
@@ -35,13 +47,25 @@ plan_infrastructure:
       - tfplan
     expire_in: 1 hour
 
-# Stage 3: Deploy the infrastructure to AWS
-apply_infrastructure:
-  stage: apply
+infra_deploy_staging:
+  extends: .terraform_base
+  stage: infra-deploy
   script:
-    - terraform apply -input=false tfplan
-  dependencies:
-    - plan_infrastructure
+    - cd terraform/environments/staging
+    - terraform init
+    - terraform validate
+    - terraform apply -auto-approve
   only:
     - main
-  when: manual # STRICT SAFETY: Requires you to click "Play" in GitLab to prevent accidental destruction
+
+infra_deploy_production:
+  extends: .terraform_base
+  stage: infra-deploy
+  script:
+    - cd terraform/environments/production
+    - terraform init
+    - terraform validate
+    - terraform apply -auto-approve
+  only:
+    - main
+  when: manual

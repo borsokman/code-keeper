@@ -20,3 +20,8 @@ variable "db_password_billing" {
   description = "Password for the Billing RDS PostgreSQL database"
   sensitive   = true
 }
+
+variable "environment" {
+  type        = string
+  description = "The deployment environment (staging or production)"
+}

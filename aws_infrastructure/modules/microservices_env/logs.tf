@@ -5,6 +5,6 @@ resource "aws_cloudwatch_log_group" "microservices_logs" {
     "billing-app",
   ])
 
-  name              = "/ecs/microservices/${each.key}"
+  name              = "/ecs/microservices/${var.environment}/${each.key}"
   retention_in_days = 7
 }

@@ -1,5 +1,6 @@
 # RDS Instance for Inventory Service
 resource "aws_db_instance" "inventory_db" {
+  identifier             = "inventory-db-${var.environment}"
   allocated_storage      = 10
   engine                 = "postgres"
   engine_version         = "13" # Matching your original container version
@@ -14,6 +15,7 @@ resource "aws_db_instance" "inventory_db" {
 
 # RDS Instance for Billing Service
 resource "aws_db_instance" "billing_db" {
+  identifier             = "billing-db-${var.environment}"
   allocated_storage      = 10
   engine                 = "postgres"
   engine_version         = "13"

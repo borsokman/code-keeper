@@ -3,6 +3,8 @@
 .vagrant/
 .venv
 __pycache__/
+.pytest_cache/
+.ruff_cache/
 k3s.yaml
 node-token
 .terraform/

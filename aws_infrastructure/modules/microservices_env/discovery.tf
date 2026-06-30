@@ -1,6 +1,6 @@
 # 1. Create the Private DNS Namespace
 resource "aws_service_discovery_private_dns_namespace" "microservices" {
-  name        = "microservices.local"
+  name        = "microservices-${var.environment}.local"
   description = "Internal DNS for microservices"
   vpc         = aws_vpc.main_vpc.id
 }

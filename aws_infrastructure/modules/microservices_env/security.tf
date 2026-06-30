@@ -1,6 +1,6 @@
 # 1. ALB Security Group (Internet -> ALB)
 resource "aws_security_group" "alb_sg" {
-  name        = "alb-security-group"
+  name        = "alb-security-group-${var.environment}"
   description = "Allow HTTP traffic from the internet"
   vpc_id      = aws_vpc.main_vpc.id
 
@@ -22,7 +22,7 @@ resource "aws_security_group" "alb_sg" {
 
 # 2. API Gateway Security Group (ALB -> API Gateway)
 resource "aws_security_group" "api_gateway_sg" {
-  name        = "api-gateway-sg"
+  name        = "api-gateway-sg-${var.environment}"
   description = "Allow traffic from ALB to API Gateway"
   vpc_id      = aws_vpc.main_vpc.id
 
@@ -44,7 +44,7 @@ resource "aws_security_group" "api_gateway_sg" {
 
 # 3. Internal Services Security Group (API Gateway -> Apps -> AmazonMQ)
 resource "aws_security_group" "internal_sg" {
-  name        = "internal-services-sg"
+  name        = "internal-services-sg-${var.environment}"
   description = "Allow internal traffic for apps and MQ broker"
   vpc_id      = aws_vpc.main_vpc.id
 
@@ -84,7 +84,7 @@ resource "aws_security_group" "internal_sg" {
 
 # 4. Database Security Group (Apps -> RDS)
 resource "aws_security_group" "db_sg" {
-  name        = "rds-database-sg"
+  name        = "rds-database-sg-${var.environment}"
   description = "Allow PostgreSQL traffic from internal applications only"
   vpc_id      = aws_vpc.main_vpc.id
 

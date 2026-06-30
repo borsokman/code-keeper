@@ -3,27 +3,33 @@ from unittest.mock import patch, MagicMock
 
 # Force dummy database environment strings so initialization doesn't break
 import os
+
 os.environ["DB_USER"] = "test"
 os.environ["DB_PASSWORD"] = "test"
 os.environ["DB_HOST"] = "test"
 os.environ["DB_PORT"] = "5432"
 os.environ["DB_NAME"] = "test"
 
+
 @pytest.fixture
 def app():
     """Builds the Flask application instance while mocking out database creation."""
     with patch("flask_sqlalchemy.SQLAlchemy.create_all"):
         from app import create_app
+
         _app = create_app()
         _app.config["TESTING"] = True
         yield _app
+
 
 @pytest.fixture
 def client(app):
     """Provides the test client."""
     return app.test_client()
 
+
 # === GET /api/movies ===
+
 
 def test_get_movies_no_filter(app, client):
     """Verifies that pulling all items returns the correct schema format."""
@@ -40,6 +46,7 @@ def test_get_movies_no_filter(app, client):
             assert len(data) == 2
             assert data[0]["title"] == "Inception"
 
+
 def test_get_movies_with_filter(app, client):
     """Verifies that passing query strings filters results correctly."""
     with app.app_context():
@@ -54,27 +61,32 @@ def test_get_movies_with_filter(app, client):
             mock_query.filter.assert_called_once()
             assert response.get_json()[0]["title"] == "Inception"
 
+
 # === POST /api/movies ===
+
 
 @patch("app.routes.db.session")
 def test_add_movie_success(mock_session, client):
     """Verifies valid movie entities pass logic checks and are committed."""
     payload = {"title": "The Matrix", "description": "Simulation"}
     response = client.post("/api/movies", json=payload)
-    
+
     assert response.status_code == 201
     mock_session.add.assert_called_once()
     mock_session.commit.assert_called_once()
+
 
 def test_add_movie_validation_failure(client):
     """Verifies that missing structural fields are blocked by the validation layer."""
     payload = {"title": "   "}  # Blank title check
     response = client.post("/api/movies", json=payload)
-    
+
     assert response.status_code == 400
     assert "title is required" in response.get_json()["error"]
 
+
 # === GET /api/movies/<id> ===
+
 
 @patch("app.routes.db.session")
 def test_get_movie_by_id_found(mock_session, client):
@@ -86,6 +98,7 @@ def test_get_movie_by_id_found(mock_session, client):
     assert response.status_code == 200
     assert response.get_json()["id"] == 42
 
+
 @patch("app.routes.db.session")
 def test_get_movie_by_id_not_found(mock_session, client):
     """Verifies that missing entries properly throw a 404 status resource error."""
@@ -95,7 +108,9 @@ def test_get_movie_by_id_not_found(mock_session, client):
     assert response.status_code == 404
     assert "movie not found" in response.get_json()["error"]
 
+
 # === PUT /api/movies/<id> ===
+
 
 @patch("app.routes.db.session")
 def test_update_movie_success(mock_session, client):
@@ -108,7 +123,9 @@ def test_update_movie_success(mock_session, client):
     assert mock_movie.title == "New Title"
     mock_session.commit.assert_called_once()
 
+
 # === DELETE /api/movies/<id> ===
+
 
 @patch("app.routes.db.session")
 def test_delete_movie_success(mock_session, client):

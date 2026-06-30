@@ -1,19 +1,19 @@
 resource "aws_ecr_repository" "api_gateway" {
-  name                 = "api-gateway-app"
+  name                 = "api-gateway-app-${var.environment}"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
   image_scanning_configuration { scan_on_push = true }
 }
 
 resource "aws_ecr_repository" "inventory_app" {
-  name                 = "inventory-app"
+  name                 = "inventory-app-${var.environment}"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
   image_scanning_configuration { scan_on_push = true }
 }
 
 resource "aws_ecr_repository" "billing_app" {
-  name                 = "billing-app"
+  name                 = "billing-app-${var.environment}"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
   image_scanning_configuration { scan_on_push = true }

@@ -13,7 +13,9 @@ from app.config import (
 gateway_bp = Blueprint("gateway", __name__)
 
 
-@gateway_bp.route("/api/movies", defaults={"path": ""}, methods=["GET", "POST", "DELETE"])
+@gateway_bp.route(
+    "/api/movies", defaults={"path": ""}, methods=["GET", "POST", "DELETE"]
+)
 @gateway_bp.route("/api/movies/<path:path>", methods=["GET", "PUT", "DELETE"])
 def proxy_inventory(path):
     target = f"{INVENTORY_URL}/api/movies"

@@ -6,14 +6,14 @@ os.environ.setdefault("DB_USER", "test_user")
 os.environ.setdefault("DB_PASSWORD", "test_password")
 os.environ.setdefault("DB_HOST", "localhost")
 os.environ.setdefault("DB_PORT", "5432")
-os.environ.setdefault("DB_NAME", "inventory_test")
+os.environ.setdefault("DB_NAME", "billing_test")
 
 from app import create_app, db
 
 
 @pytest.fixture(scope="session")
 def app():
-    """Creates a real Flask app connected to the live Postgres inventory container."""
+    """Creates a real Flask app connected to the live Postgres billing container."""
     app = create_app()
     app.config["TESTING"] = True
 
@@ -27,7 +27,7 @@ def app():
 
 @pytest.fixture(scope="function")
 def session(app):
-    """Purges the database before every single test to ensure strict isolation."""
+    """Purges the billing database before every test."""
     with app.app_context():
         for table in reversed(db.metadata.sorted_tables):
             db.session.execute(table.delete())

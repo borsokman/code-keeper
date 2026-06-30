@@ -1,16 +1,44 @@
 stages:
+  - lint
+  - security
   - test
   - build
-  - deploy
+  - deploy-staging
+  - e2e-test
+  - deploy-production
 
 variables:
   AWS_REGISTRY_URL: "327425719370.dkr.ecr.eu-north-1.amazonaws.com"
   APP_NAME: "inventory-app"
-  CLUSTER_NAME: "microservices-cluster"
-  SERVICE_NAME: "inventory-app-service"
+  CLUSTER_STAGING: "microservices-cluster-staging"
+  SERVICE_STAGING: "inventory-app-service-staging"
+  CLUSTER_PRODUCTION: "microservices-cluster-production"
+  SERVICE_PRODUCTION: "inventory-app-service-production"
+
+# Pre-test analysis: Validates syntax, code quality, and formatting rules
+run_linter:
+  stage: lint
+  image: python:3.12-slim
+  script:
+    - pip install ruff
+    # 1. Catch syntax errors, unused imports, and common bugs
+    - ruff check .
+    # 2. Verify code adheres strictly to formatting standards (fails if unformatted)
+    - ruff format --check .
+
+# Code & Dependency Scanning: Catches security vulnerabilities in code and packages
+run_security_scans:
+  stage: security
+  image: python:3.12-slim
+  script:
+    - pip install bandit pip-audit
+    # 1. Scan your custom Python code for known security antipatterns
+    - bandit -r app/
+    # 2. Audit external dependencies in requirements.txt for active CVEs
+    - pip-audit -r requirements.txt
 
 # Executes your unit tests locally inside the GitLab runner container
-run_all_tests:
+run_unit/integration_tests:
   stage: test
   image: python:3.12-slim
   services:
@@ -27,10 +55,11 @@ run_all_tests:
     POSTGRES_USER: "test_user"
   script:
     - pip install -r requirements.txt
+    - pip install pytest
     # 1. Run Unit Tests first
-    - pytest tests/unit/
+    - python3 -m pytest tests/unit/
     # 2. Run Integration Tests second (overriding host for the GitLab service container network)
-    - DB_HOST=inventory-db pytest tests/integration/
+    - DB_HOST=inventory-db python3 -m pytest tests/integration/
 # This stage builds the Docker image and pushes it securely to AWS ECR
 build_image:
   stage: build
@@ -44,23 +73,52 @@ build_image:
     # Install AWS CLI inside the runner container to authenticate with ECR
     - apk add --no-cache aws-cli
     - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_REGISTRY_URL
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
   script:
     # Build the image using the unique GitLab Commit SHA tag
     - docker build -t $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA .
+    # Scan the built image. Fails the pipeline if HIGH or CRITICAL vulnerabilities are found
+    - trivy image --severity HIGH,CRITICAL --exit-code 1 $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA
     # Also tag it as latest for reference
     - docker tag $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA $AWS_REGISTRY_URL/$APP_NAME:latest
     # Push both tags to ECR
     - docker push $AWS_REGISTRY_URL/$APP_NAME:$CI_COMMIT_SHA
     - docker push $AWS_REGISTRY_URL/$APP_NAME:latest
 
-# This stage triggers AWS ECS to download the new image and restart the Fargate task
-deploy_to_ecs:
-  stage: deploy
+# 1. AUTOMATIC DEPLOY TO STAGING
+deploy_staging:
+  stage: deploy-staging
   image:
     name: amazon/aws-cli:latest
     entrypoint: [""]
   script:
-    # Update the ECS Task Definition to use the new container image tag
-    - aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment --region $AWS_DEFAULT_REGION
+    # Trigger image update to the cluster staging environment
+    - aws ecs update-service --cluster $CLUSTER_STAGING --service $SERVICE_STAGING --force-new-deployment --region $AWS_DEFAULT_REGION
+    # Halt and monitor rollout health (Fails if staging container crashes on boot)
+    - aws ecs wait services-stable --cluster $CLUSTER_STAGING --services $SERVICE_STAGING --region $AWS_DEFAULT_REGION
   only:
-    - main # Only deploy when code is merged into the main branch
+    - main
+
+# 2. RUN E2E TESTS AGAINST STAGING URL
+run_e2e_tests:
+  stage: e2e-test
+  image: python:3.12-slim
+  script:
+    - pip install requests pytest
+    # Execute end-to-end assertions against live staging infrastructure
+    - python3 -m pytest tests/e2e/
+  only:
+    - main
+
+# 3. MANUAL PRODUCTION GATEWAY (Only unlocks if E2E tests are perfectly green)
+deploy_production:
+  stage: deploy-production
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
+  script:
+    - aws ecs update-service --cluster $CLUSTER_PRODUCTION --service $SERVICE_PRODUCTION --force-new-deployment --region $AWS_DEFAULT_REGION
+    - aws ecs wait services-stable --cluster $CLUSTER_PRODUCTION --services $SERVICE_PRODUCTION --region $AWS_DEFAULT_REGION
+  only:
+    - main
+  when: manual # Creates the manual approval button inside GitLab UI

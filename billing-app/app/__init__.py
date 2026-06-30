@@ -18,7 +18,9 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        from app.models import Order
+        # noqa: F401 prevents Ruff from failing on this intentional import
+        from app.models import Order  # noqa: F401
+
         db.create_all()
 
     return app

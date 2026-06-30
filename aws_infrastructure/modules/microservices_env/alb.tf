@@ -1,6 +1,6 @@
 # 1. The Application Load Balancer
 resource "aws_lb" "main_alb" {
-  name               = "microservices-alb"
+  name               = "microservices-alb-${var.environment}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
@@ -9,7 +9,7 @@ resource "aws_lb" "main_alb" {
 
 # 2. The Target Group (Points to the API Gateway)
 resource "aws_lb_target_group" "api_gateway_tg" {
-  name        = "api-gateway-tg"
+  name        = "api-gateway-tg-${var.environment}"
   port        = 3000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main_vpc.id

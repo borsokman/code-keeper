@@ -1,6 +1,6 @@
 # API Gateway Service (Connected to ALB)
 resource "aws_ecs_service" "api_gateway_service" {
-  name            = "api-gateway-service"
+  name            = "api-gateway-service-${var.environment}"
   cluster         = aws_ecs_cluster.main_cluster.id
   task_definition = aws_ecs_task_definition.api_gateway.arn
   launch_type     = "FARGATE"
@@ -21,7 +21,7 @@ resource "aws_ecs_service" "api_gateway_service" {
 
 # Inventory App Service (Internal only, uses Service Discovery)
 resource "aws_ecs_service" "inventory_app_service" {
-  name            = "inventory-app-service"
+  name            = "inventory-app-service-${var.environment}"
   cluster         = aws_ecs_cluster.main_cluster.id
   task_definition = aws_ecs_task_definition.inventory_app.arn
   launch_type     = "FARGATE"
@@ -39,7 +39,7 @@ resource "aws_ecs_service" "inventory_app_service" {
 }
 
 resource "aws_ecs_service" "billing_app_service" {
-  name            = "billing-app-service"
+  name            = "billing-app-service-${var.environment}"
   cluster         = aws_ecs_cluster.main_cluster.id
   task_definition = aws_ecs_task_definition.billing_app.arn
   launch_type     = "FARGATE"
