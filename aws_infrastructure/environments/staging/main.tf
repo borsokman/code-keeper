@@ -25,6 +25,17 @@ module "staging_infrastructure" {
 }
 
 # Declarations for variables passed into the module from tfvars/GitLab
-variable "rabbitmq_password" { type = string; sensitive = true }
-variable "db_password_inventory" { type = string; sensitive = true }
-variable "db_password_billing" { type = string; sensitive = true }
+variable "rabbitmq_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "db_password_inventory" {
+  type      = string
+  sensitive = true
+}
+
+variable "db_password_billing" {
+  type      = string
+  sensitive = true
+}

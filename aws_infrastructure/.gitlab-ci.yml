@@ -24,7 +24,7 @@ stages:
 cache:
   key: terraform-cache
   paths:
-    - .terraform/
+    - .aws_infrastructure/
 
 before_script:
   - terraform init
