@@ -283,3 +283,7 @@ New Venv
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
+Str0ngPassw0rd!67
+Str0ngPassw0rd!45
+Str0ngPassw0rd!23

@@ -5,7 +5,7 @@ resource "aws_vpc" "main_vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "microservices-vpc-${var.environment}"
+    Name = "microservices-vpc"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_vpc.id
 
   tags = {
-    Name = "microservices-igw-${var.environment}"
+    Name = "microservices-igw"
   }
 }
 
@@ -26,7 +26,7 @@ resource "aws_subnet" "public_1" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "public-subnet-1-${var.environment}"
+    Name = "public-subnet-1"
   }
 }
 
@@ -37,7 +37,7 @@ resource "aws_subnet" "public_2" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "public-subnet-2-${var.environment}"
+    Name = "public-subnet-2"
   }
 }
 
@@ -48,7 +48,7 @@ resource "aws_subnet" "private_1" {
   availability_zone = "eu-north-1a"
 
   tags = {
-    Name = "private-subnet-1-${var.environment}"
+    Name = "private-subnet-1"
   }
 }
 
@@ -58,7 +58,7 @@ resource "aws_subnet" "private_2" {
   availability_zone = "eu-north-1b"
 
   tags = {
-    Name = "private-subnet-2-${var.environment}"
+    Name = "private-subnet-2"
   }
 }
 
@@ -93,7 +93,7 @@ resource "aws_nat_gateway" "nat_gw" {
   subnet_id     = aws_subnet.public_1.id
 
   tags = {
-    Name = "microservices-nat-${var.environment}"
+    Name = "microservices-nat"
   }
 }
 
@@ -119,10 +119,10 @@ resource "aws_route_table_association" "private_2_assoc" {
 
 # 9. DB SUBNET GROUP (For RDS files)
 resource "aws_db_subnet_group" "private" {
-  name       = "main-db-subnet-group-${var.environment}"
+  name       = "main-db-subnet-group"
   subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id]
 
   tags = {
-    Name = "microservices-db-subnet-group-${var.environment}"
+    Name = "microservices-db-subnet-group"
   }
 }

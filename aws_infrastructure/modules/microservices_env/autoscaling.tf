@@ -9,7 +9,7 @@ resource "aws_appautoscaling_target" "api_gateway_target" {
 
 # 2. API Gateway CPU Policy (Target 60%)
 resource "aws_appautoscaling_policy" "api_gateway_cpu_policy" {
-  name               = "api-gateway-cpu-60-${var.environment}"
+  name               = "api-gateway-cpu-60"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.api_gateway_target.resource_id
   scalable_dimension = aws_appautoscaling_target.api_gateway_target.scalable_dimension
@@ -36,7 +36,7 @@ resource "aws_appautoscaling_target" "inventory_app_target" {
 
 # 4. Inventory App CPU Policy (Target 60%)
 resource "aws_appautoscaling_policy" "inventory_app_cpu_policy" {
-  name               = "inventory-app-cpu-60-${var.environment}"
+  name               = "inventory-app-cpu-60"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.inventory_app_target.resource_id
   scalable_dimension = aws_appautoscaling_target.inventory_app_target.scalable_dimension
